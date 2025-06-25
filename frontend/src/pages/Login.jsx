@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/Login.css';
 
 const Login = () => {
@@ -6,11 +8,32 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log('Login attempt with:', { email, password });
+    setError('');
+    try {
+      const params = new URLSearchParams();
+      params.append('username', email);
+      params.append('password', password);
+      const response = await axios.post(
+        'http://localhost:8000/api/auth/login',
+        params,
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      );
+      const { access_token, role } = response.data;
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('role', role);
+      if (role === 'admin') {
+        navigate('/admin');
+      } else {
+        setError('Accès réservé aux administrateurs.');
+      }
+    } catch (err) {
+      setError('Email ou mot de passe incorrect.');
+    }
   };
 
   const handleForgotPassword = (e) => {
@@ -23,6 +46,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <h2>Connexion</h2>
+        {error && <div className="error-message">{error}</div>}
         {!showForgotPassword ? (
           <form onSubmit={handleLogin}>
             <div className="form-group">

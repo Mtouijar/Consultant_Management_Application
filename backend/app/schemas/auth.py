@@ -5,6 +5,7 @@ from app.models.user import UserRole
 class Token(BaseModel):
     access_token: str
     token_type: str
+    role: UserRole
 
 class TokenData(BaseModel):
     email: Optional[str] = None
